@@ -9,7 +9,7 @@ export class TodoController {
     console.log("I am in todo Controller");
     this.io.on("connection", (socket: Socket) => {
       console.log("new client connected");
-      socket.on("addTodo", (data) => this.handleAddTodo(socket, data));
+      socket.on("handleAddTodo", (data) => this.handleAddTodo(socket, data));
       socket.on("deleteTodo", (data) => this.handleTodoDelete(socket, data));
       socket.on("handleChangeStatus", (data) =>
         this.handleChangeStatus(socket, data)
@@ -21,6 +21,7 @@ export class TodoController {
   }
 
   private async handleAddTodo(socket: Socket, data: any) {
+    console.log("I am addTodo")
     const { task, deadLine, status } = data;
     try {
       await todoModel.create({
@@ -35,7 +36,7 @@ export class TodoController {
         data: todoList,
       });
     } catch (error) {
-      socket.emit("todo_response", {
+      socket.emit("todoResponse", {
         status: "error",
         error,
       });
@@ -54,6 +55,7 @@ export class TodoController {
     }
     const todoList = await todoModel.find();
     socket.emit("todoResponse", {
+      status:"success",
       message: "getting all details",
       data: todoList,
     });
@@ -91,7 +93,8 @@ export class TodoController {
       const pendingData = await todoModel.find({
         status: Status.Pending,
       });
-      console.log(pendingData)
+      
+      // console.log(pendingData)
       if (!pendingData) {
         socket.emit("todoResponse", {
           message: "There is not pending task",
@@ -100,6 +103,7 @@ export class TodoController {
       }
 
       socket.emit("todoResponse", {
+        status : "success",
         message: "fetching pending data",
         data: pendingData,
       });
